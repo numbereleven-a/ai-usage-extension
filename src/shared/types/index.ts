@@ -91,6 +91,7 @@ export interface UsageState {
 }
 
 export type PopupLayout = 'single' | 'grid';
+export type PercentageDisplay = 'used' | 'remaining';
 export type RefreshMode = 'auto' | 'manual';
 export type ProviderMetric =
   | 'session'
@@ -112,6 +113,7 @@ export interface ExtensionSettings {
   /** `auto` follows the browser UI language; anything else is a `_locales` folder. */
   language: LanguagePreference;
   popupLayout: PopupLayout;
+  percentageDisplay: PercentageDisplay;
   refresh: {
     mode: RefreshMode;
     intervalMinutes: number;

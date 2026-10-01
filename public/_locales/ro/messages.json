@@ -353,6 +353,21 @@
   "optionsTitle": {
     "message": "Setări AI Usage Tracker"
   },
+  "percentageUsed": {
+    "message": "$1% utilizat"
+  },
+  "percentageRemaining": {
+    "message": "$1% rămas"
+  },
+  "optionsPercentageTitle": {
+    "message": "Afișarea limitelor"
+  },
+  "optionsPercentageUsed": {
+    "message": "Utilizat"
+  },
+  "optionsPercentageRemaining": {
+    "message": "Rămas"
+  },
   "optionsRefreshTitle": {
     "message": "Actualizarea utilizării"
   },

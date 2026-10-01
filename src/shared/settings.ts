@@ -80,6 +80,7 @@ const defaultProvider = (provider: ProviderId): ProviderDisplaySettings => ({
 export const createDefaultSettings = (): ExtensionSettings => ({
   language: 'auto',
   popupLayout: 'single',
+  percentageDisplay: 'used',
   refresh: { mode: 'auto', intervalMinutes: REFRESH_INTERVAL_MINUTES },
   providers: Object.fromEntries(
     PROVIDER_IDS.map((provider) => [provider, defaultProvider(provider)]),
@@ -133,6 +134,7 @@ export const normalizeSettings = (
   return {
     language: normalizeLanguage(candidate.language),
     popupLayout: candidate.popupLayout === 'grid' ? 'grid' : 'single',
+    percentageDisplay: candidate.percentageDisplay === 'remaining' ? 'remaining' : 'used',
     refresh: {
       mode: candidate.refresh?.mode === 'manual' ? 'manual' : 'auto',
       intervalMinutes:

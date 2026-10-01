@@ -353,6 +353,21 @@
   "optionsTitle": {
     "message": "Ρυθμίσεις AI Usage Tracker"
   },
+  "percentageUsed": {
+    "message": "$1% χρησιμοποιήθηκε"
+  },
+  "percentageRemaining": {
+    "message": "$1% απομένει"
+  },
+  "optionsPercentageTitle": {
+    "message": "Εμφάνιση ορίων"
+  },
+  "optionsPercentageUsed": {
+    "message": "Χρησιμοποιημένο"
+  },
+  "optionsPercentageRemaining": {
+    "message": "Υπόλοιπο"
+  },
   "optionsRefreshTitle": {
     "message": "Ανανέωση χρήσης"
   },

@@ -353,6 +353,21 @@
   "optionsTitle": {
     "message": "Nastavenia AI Usage Tracker"
   },
+  "percentageUsed": {
+    "message": "$1% využité"
+  },
+  "percentageRemaining": {
+    "message": "$1% zostáva"
+  },
+  "optionsPercentageTitle": {
+    "message": "Zobrazenie limitov"
+  },
+  "optionsPercentageUsed": {
+    "message": "Využité"
+  },
+  "optionsPercentageRemaining": {
+    "message": "Zostáva"
+  },
   "optionsRefreshTitle": {
     "message": "Obnovenie využitia"
   },

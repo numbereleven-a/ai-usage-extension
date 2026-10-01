@@ -84,6 +84,10 @@ export const OptionsApp = () => {
           />
           <DisplaySettingsSection
             popupLayout={settings.popupLayout}
+            percentageDisplay={settings.percentageDisplay}
+            onPercentageDisplayChange={(percentageDisplay) =>
+              updateSettings((current) => ({ ...current, percentageDisplay }))
+            }
             onPopupLayoutChange={(layout) =>
               updateSettings((current) => withPopupLayout(current, layout))
             }

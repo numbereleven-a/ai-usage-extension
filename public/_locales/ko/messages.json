@@ -353,6 +353,21 @@
   "optionsTitle": {
     "message": "AI Usage Tracker 설정"
   },
+  "percentageUsed": {
+    "message": "$1% 사용"
+  },
+  "percentageRemaining": {
+    "message": "$1% 남음"
+  },
+  "optionsPercentageTitle": {
+    "message": "한도 표시"
+  },
+  "optionsPercentageUsed": {
+    "message": "사용량"
+  },
+  "optionsPercentageRemaining": {
+    "message": "남은 양"
+  },
   "optionsRefreshTitle": {
     "message": "사용량 새로고침"
   },

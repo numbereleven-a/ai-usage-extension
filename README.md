@@ -19,6 +19,8 @@ badge.
   so it never clashes with the host page's styles.
 - **Configurable refresh**: automatic updates every 5 minutes by default, with a
   custom interval of at least 1 minute, or manual updates only via **Refresh**.
+- **Limit display**: show the used percentage (13% used) or remaining percentage
+  (87% left) across all providers, including the popup, overlays, and badge tooltip.
 - **Private by design**: usage is read from your own authenticated browser sessions.
   No extension accounts, no background telemetry.
 - **Problem reports**: an optional "Report a problem" button in the popup footer sends
@@ -51,6 +53,11 @@ or press Enter. **Only on Refresh** removes the background alarm and suppresses
 automatic usage requests on worker startup, popup/overlay opening, and credential
 changes. Cached data remains visible until you press Refresh. A request already
 in progress when you switch modes is allowed to finish.
+
+Under **Popup layout**, **Limit display** switches between **Used** and **Remaining**.
+Percentage labels and progress-bar fill follow the selected mode. Warning colors,
+badge icon ranges, raw counts, and stored usage calculations still use the consumed
+amount.
 
 ## Architecture
 

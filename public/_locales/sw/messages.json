@@ -353,6 +353,21 @@
   "optionsTitle": {
     "message": "Mipangilio ya AI Usage Tracker"
   },
+  "percentageUsed": {
+    "message": "$1% imetumika"
+  },
+  "percentageRemaining": {
+    "message": "$1% imebaki"
+  },
+  "optionsPercentageTitle": {
+    "message": "Onyesho la vikomo"
+  },
+  "optionsPercentageUsed": {
+    "message": "Imetumika"
+  },
+  "optionsPercentageRemaining": {
+    "message": "Imebaki"
+  },
   "optionsRefreshTitle": {
     "message": "Kuonyesha matumizi upya"
   },

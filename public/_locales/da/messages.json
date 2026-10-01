@@ -353,6 +353,21 @@
   "optionsTitle": {
     "message": "Indstillinger for AI Usage Tracker"
   },
+  "percentageUsed": {
+    "message": "$1% brugt"
+  },
+  "percentageRemaining": {
+    "message": "$1% tilbage"
+  },
+  "optionsPercentageTitle": {
+    "message": "Visning af grænser"
+  },
+  "optionsPercentageUsed": {
+    "message": "Brugt"
+  },
+  "optionsPercentageRemaining": {
+    "message": "Tilbage"
+  },
   "optionsRefreshTitle": {
     "message": "Opdatering af forbrug"
   },

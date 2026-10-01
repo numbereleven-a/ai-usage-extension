@@ -353,6 +353,21 @@
   "optionsTitle": {
     "message": "Impostazioni di AI Usage Tracker"
   },
+  "percentageUsed": {
+    "message": "$1% utilizzato"
+  },
+  "percentageRemaining": {
+    "message": "$1% rimanente"
+  },
+  "optionsPercentageTitle": {
+    "message": "Visualizzazione dei limiti"
+  },
+  "optionsPercentageUsed": {
+    "message": "Utilizzato"
+  },
+  "optionsPercentageRemaining": {
+    "message": "Rimanente"
+  },
   "optionsRefreshTitle": {
     "message": "Aggiornamento utilizzo"
   },

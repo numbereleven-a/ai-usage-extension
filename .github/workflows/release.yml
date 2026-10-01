@@ -55,8 +55,7 @@ jobs:
           VITE_POSTHOG_PROJECT_TOKEN: ${{ secrets.VITE_POSTHOG_PROJECT_TOKEN }}
         run: |
           if [ -z "$VITE_POSTHOG_PROJECT_TOKEN" ]; then
-            echo "::error::Repository secret VITE_POSTHOG_PROJECT_TOKEN is empty. The release would ship with the popup's \"Report a problem\" button degraded to a GitHub link. Add the secret, or delete this step to release without problem reports."
-            exit 1
+            echo "::warning::Problem reporting is not configured. The release will use the GitHub issues link."
           fi
 
       - name: Build release zip

@@ -128,9 +128,9 @@ link to GitHub issues instead.
 
 In CI the same variables come from the repository settings: add the token as the
 `VITE_POSTHOG_PROJECT_TOKEN` **secret**, and — only if you are not on the EU cloud —
-`VITE_POSTHOG_HOST` as a repository **variable**. Both workflows pass them to the build,
-and `release.yml` refuses to publish a zip while the secret is empty, so a store build
-can never silently ship without problem reports.
+`VITE_POSTHOG_HOST` as a repository **variable**. Both workflows pass them to the build.
+Without a token, the release workflow reports a warning and builds with the GitHub
+issues link instead of the problem-report dialog.
 
 ## Getting Started
 

@@ -107,9 +107,20 @@ const PROVIDERS: Array<{
 const track = trackFrom('popup');
 
 export const App = () => {
-  const { usage, settings, loading, refreshing, error, refresh } = useUsageData();
+  const {
+    usage,
+    settings,
+    loading,
+    refreshing,
+    error,
+    refresh,
+    changingRefreshMode,
+    toggleRefreshMode,
+  } = useUsageData();
   const now = useNow(30_000);
   const [reportOpen, setReportOpen] = useState(false);
+  const automatic = settings?.refresh.mode === 'auto';
+  const refreshModeTitle = `${msg('optionsRefreshTitle')}: ${msg(automatic ? 'optionsRefreshAuto' : 'optionsRefreshManual')} → ${msg(automatic ? 'optionsRefreshManual' : 'optionsRefreshAuto')}`;
 
   const sendReport = useCallback(
     (message: string) =>
@@ -135,6 +146,18 @@ export const App = () => {
           </button>
           <button
             type="button"
+            onClick={() => void toggleRefreshMode()}
+            disabled={!settings || changingRefreshMode}
+            className={`au-btn-refresh au-btn-mode ${automatic ? 'au-btn-mode--auto' : ''}`}
+            title={settings ? refreshModeTitle : msg('optionsLoading')}
+            aria-label={`${msg('optionsRefreshTitle')}: ${msg('optionsRefreshAuto')}`}
+            aria-pressed={automatic}
+            aria-busy={changingRefreshMode}
+          >
+            <span aria-hidden="true">{settings ? (automatic ? 'A' : 'M') : '–'}</span>
+          </button>
+          <button
+            type="button"
             onClick={() => void refresh()}
             disabled={refreshing}
             className={`au-btn-refresh ${refreshing ? 'au-btn-refresh--spin' : ''}`}
@@ -148,7 +171,7 @@ export const App = () => {
 
       {error && (
         <p className="au-error" role="alert">
-          {msg('refreshErrorPrefix')} - {error}
+          {error === msg('optionsSaveError') ? error : `${msg('refreshErrorPrefix')} - ${error}`}
         </p>
       )}
       <div className={`au-cards ${settings?.popupLayout === 'grid' ? 'au-cards--grid' : ''}`}>

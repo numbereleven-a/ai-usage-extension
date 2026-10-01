@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { STORAGE_KEYS } from '../../shared/constants';
 import { msg } from '../../shared/i18n';
 import { readUsageState, requestUsageRefresh } from '../../shared/messaging';
-import { readExtensionSettings } from '../../shared/settings';
+import { readExtensionSettings, saveExtensionSettings } from '../../shared/settings';
 import type { ExtensionSettings, UsageState } from '../../shared/types';
 
 export interface UsageData {
@@ -11,7 +11,9 @@ export interface UsageData {
   loading: boolean;
   refreshing: boolean;
   error: string | null;
+  changingRefreshMode: boolean;
   refresh: () => Promise<void>;
+  toggleRefreshMode: () => Promise<void>;
 }
 
 export const useUsageData = (): UsageData => {
@@ -20,6 +22,7 @@ export const useUsageData = (): UsageData => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [changingRefreshMode, setChangingRefreshMode] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -96,12 +99,35 @@ export const useUsageData = (): UsageData => {
     }
   }, []);
 
+  const toggleRefreshMode = useCallback(async (): Promise<void> => {
+    setChangingRefreshMode(true);
+    setError(null);
+    try {
+      const current = await readExtensionSettings();
+      const next: ExtensionSettings = {
+        ...current,
+        refresh: {
+          ...current.refresh,
+          mode: current.refresh.mode === 'manual' ? 'auto' : 'manual',
+        },
+      };
+      await saveExtensionSettings(next);
+      setSettings(next);
+    } catch {
+      setError(msg('optionsSaveError'));
+    } finally {
+      setChangingRefreshMode(false);
+    }
+  }, []);
+
   return {
     usage,
     settings,
     loading,
     refreshing,
     error,
+    changingRefreshMode,
     refresh,
+    toggleRefreshMode,
   };
 };

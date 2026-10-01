@@ -54,6 +54,10 @@ automatic usage requests on worker startup, popup/overlay opening, and credentia
 changes. Cached data remains visible until you press Refresh. A request already
 in progress when you switch modes is allowed to finish.
 
+The popup header also has a mode button next to Refresh: **M** means manual and
+**A** means automatic. Click it to switch modes without opening Settings; the
+configured automatic interval is preserved.
+
 Under **Popup layout**, **Limit display** switches between **Used** and **Remaining**.
 Percentage labels and progress-bar fill follow the selected mode. Warning colors,
 badge icon ranges, raw counts, and stored usage calculations still use the consumed

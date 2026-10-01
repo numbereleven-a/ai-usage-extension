@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { loadTypeScript, deferred, flush, event } from './helpers/load-typescript.js';
 
 const sample = (percentage) => ({
@@ -366,12 +368,19 @@ describe('worker startup and refresh scheduling', () => {
   });
 });
 
-function popupHarness(initial = {}, mode = 'auto') {
+function popupHarness(initial = {}, mode = 'auto', saveFailure = false) {
   const states = [];
   let cleanup;
   let refreshCalls = 0;
   const pending = deferred();
   const changes = event();
+  let preferences = {
+    providers: {},
+    popupLayout: 'grid',
+    percentageDisplay: 'remaining',
+    refresh: { mode, intervalMinutes: 12.5 },
+  };
+  const saves = [];
   const { useUsageData } = loadTypeScript('src/sidepanel/hooks/useUsageData.ts', {
     globals: { chrome: { storage: { onChanged: changes } } },
     mocks: {
@@ -393,7 +402,13 @@ function popupHarness(initial = {}, mode = 'auto') {
       },
       '../../shared/i18n': { msg: (key) => key },
       '../../shared/settings': {
-        readExtensionSettings: async () => ({ providers: {}, refresh: { mode } }),
+        readExtensionSettings: async () => preferences,
+        saveExtensionSettings: async (next) => {
+          if (saveFailure) throw new Error('storage unavailable');
+          preferences = next;
+          saves.push(next);
+          changes.emit({ ai_usage_settings: { newValue: next } }, 'local');
+        },
       },
       '../../shared/messaging': {
         readUsageState: async () => initial,
@@ -410,12 +425,85 @@ function popupHarness(initial = {}, mode = 'auto') {
     pending,
     changes,
     refresh: data.refresh,
+    toggleRefreshMode: data.toggleRefreshMode,
+    saves,
     cleanup: () => cleanup(),
     calls: () => refreshCalls,
   };
 }
 
 describe('popup hydration', () => {
+  it('toggles the saved refresh mode in both directions without changing the interval or fetching usage', async () => {
+    const { states, toggleRefreshMode, saves, calls, cleanup } = popupHarness({}, 'manual');
+    await flush();
+    await toggleRefreshMode();
+    assert.equal(states[1].refresh.mode, 'auto');
+    await toggleRefreshMode();
+    assert.equal(states[1].refresh.mode, 'manual');
+    assert.deepEqual(
+      saves.map((settings) => settings.refresh.mode),
+      ['auto', 'manual'],
+    );
+    for (const saved of saves) {
+      assert.equal(saved.refresh.intervalMinutes, 12.5);
+      assert.equal(saved.popupLayout, 'grid');
+      assert.equal(saved.percentageDisplay, 'remaining');
+    }
+    assert.equal(calls(), 0);
+    cleanup();
+  });
+
+  it('keeps the current mode and reports a failed mode save', async () => {
+    const { states, toggleRefreshMode, cleanup } = popupHarness({}, 'manual', true);
+    await flush();
+    await toggleRefreshMode();
+    assert.equal(states[1].refresh.mode, 'manual');
+    assert.equal(states[4], 'optionsSaveError');
+    cleanup();
+  });
+
+  it('shows A or M with the current mode and switching action in the popup header', () => {
+    const { createDefaultSettings } = loadTypeScript('src/shared/settings.ts');
+    let settings = createDefaultSettings();
+    const assets = [
+      'claude-anthropic.jpg',
+      'codex-openai.jpg',
+      'cursor.webp',
+      'kimi.webp',
+      'minimax.webp',
+      'xiaomimimo.webp',
+      'qwen.webp',
+      'zai.webp',
+    ];
+    const { App } = loadTypeScript('src/sidepanel/App.tsx', {
+      mocks: {
+        ...Object.fromEntries(assets.map((asset) => [`../assets/brands/${asset}`, 'brand.png'])),
+        './styles/global.css': {},
+        '../shared/analytics/track': { trackFrom: () => async () => true },
+        '../shared/hooks/useNow': { useNow: () => 123 },
+        './hooks/useUsageData': {
+          useUsageData: () => ({
+            usage: {},
+            settings,
+            loading: false,
+            refreshing: false,
+            error: null,
+            changingRefreshMode: false,
+            refresh: async () => {},
+            toggleRefreshMode: async () => {},
+          }),
+        },
+      },
+    });
+    const automatic = renderToStaticMarkup(createElement(App));
+    assert.match(automatic, /title="Usage refresh: Automatic → Only on Refresh"/);
+    assert.match(automatic, /aria-pressed="true"[^>]*><span aria-hidden="true">A<\/span>/);
+    settings.refresh.mode = 'manual';
+    const manual = renderToStaticMarkup(createElement(App));
+    assert.match(manual, /title="Usage refresh: Only on Refresh → Automatic"/);
+    assert.match(manual, /aria-pressed="false"[^>]*><span aria-hidden="true">M<\/span>/);
+  });
+
   it('shows cached data without fetching in manual mode and refreshes on demand', async () => {
     const cache = { mimo: sample(13) };
     const { states, pending, refresh, calls, cleanup } = popupHarness(cache, 'manual');

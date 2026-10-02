@@ -1,18 +1,18 @@
 {
 	"name": "ai-usage-tracker",
-	"version": "0.1.27",
-	"description": "Private Chrome extension for tracking Claude, Codex, Kimi, MiniMax, Cursor, Xiaomi MiMo, GLM, and Qwen Coding Plan usage limits, quotas, and reset times.",
+	"version": "0.1.28",
+	"description": "Private Chrome and Firefox extension for tracking Claude, Codex, Kimi, MiniMax, Cursor, Xiaomi MiMo, GLM, and Qwen Coding Plan usage limits, quotas, and reset times.",
 	"private": true,
 	"license": "MIT",
 	"author": "cupcakedev",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/cupcakedev/ai-usage-extension.git"
+		"url": "git+https://github.com/numbereleven-a/ai-usage-extension.git"
 	},
 	"bugs": {
-		"url": "https://github.com/cupcakedev/ai-usage-extension/issues"
+		"url": "https://github.com/numbereleven-a/ai-usage-extension/issues"
 	},
-	"homepage": "https://github.com/cupcakedev/ai-usage-extension#readme",
+	"homepage": "https://github.com/numbereleven-a/ai-usage-extension#readme",
 	"keywords": [
 		"chrome-extension",
 		"mv3",
@@ -41,7 +41,7 @@
 		"dev": "vite build --watch --mode development",
 		"bump": "node scripts/bump-version.js",
 		"typecheck": "tsc --noEmit",
-		"test": "node --test tests/",
+		"test": "node --test",
 		"build": "tsc --noEmit && vite build",
 		"release": "pnpm test && pnpm build && node scripts/release.js",
 		"promo": "node scripts/promo.js",

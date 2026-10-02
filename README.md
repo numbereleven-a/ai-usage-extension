@@ -1,9 +1,12 @@
 # AI Usage Tracker: Claude, Codex, Kimi, Cursor, GLM, Qwen
 
-[![CI](https://github.com/cupcakedev/ai-usage-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/cupcakedev/ai-usage-extension/actions/workflows/ci.yml)
+Fork of [cupcakedev/ai-usage-extension](https://github.com/cupcakedev/ai-usage-extension),
+with Chrome and Firefox builds.
+
+[![CI](https://github.com/numbereleven-a/ai-usage-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/numbereleven-a/ai-usage-extension/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-A Chrome extension (Manifest V3) that tracks usage limits from **Claude**, **Codex**,
+A Chrome and Firefox extension (Manifest V3) that tracks usage limits from **Claude**, **Codex**,
 **MiniMax**, **Kimi Code**, **Cursor**, **Xiaomi MiMo**, the **GLM Coding Plan**
 (z.ai), and the **Qwen Coding Plan** (Qwen Cloud), using your existing browser
 sessions. It surfaces the data in a popup, an on-page overlay, and the toolbar
@@ -28,24 +31,56 @@ badge.
 
 ## Install
 
-The extension is not distributed through npm. For normal use, install a packaged
-release from the GitHub releases page or load a local build in Chrome.
+Download the browser-specific package from
+[GitHub Releases](https://github.com/numbereleven-a/ai-usage-extension/releases).
+The extension is not distributed through npm.
 
-To load a local build:
+### Chrome and Chromium browsers
+
+1. Download the Chrome ZIP and extract it to a folder.
+2. Open `chrome://extensions` and enable **Developer mode**.
+3. Click **Load unpacked** and select the extracted folder containing `manifest.json`.
+
+To build from source, use the `main` branch:
 
 ```bash
+git switch main
 corepack enable
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 ```
 
-Then:
+Load the generated `dist/` folder through **Load unpacked**.
 
-1. Open `chrome://extensions`.
-2. Enable **Developer mode**.
-3. Click **Load unpacked** and select the `dist/` directory.
-4. Sign in to the providers you want to track, then open the popup. It refreshes automatically
-   by default; in manual mode, press **Refresh**.
+### Firefox
+
+Firefox 140 or newer is required. The Firefox XPI in this release is unsigned
+and can be loaded temporarily:
+
+1. Open `about:debugging#/runtime/this-firefox`.
+2. Click **Load Temporary Add-on**.
+3. Select the downloaded `*-firefox.xpi`.
+
+Temporary add-ons are removed when Firefox restarts. Permanent installation in
+standard Firefox requires an XPI signed by Mozilla through addons.mozilla.org.
+
+To build from source, use the
+[`firefox` branch](https://github.com/numbereleven-a/ai-usage-extension/tree/firefox):
+
+```bash
+git switch firefox
+corepack enable
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+Select `dist/manifest.json` through **Load Temporary Add-on**. Allow access to the
+provider sites in the extension's permissions if Firefox asks for it.
+
+### Usage settings
+
+Sign in to the providers you want to track, then open the popup. It refreshes
+automatically by default; in manual mode, press **Refresh**.
 
 Open **Settings** to select **Usage refresh** and set a custom interval in minutes
 (fractional values are supported). The interval is saved when you leave the field
@@ -70,7 +105,7 @@ messaging layer:
 
 ```text
 src/
-  background/   # Service worker: scheduling, fetching, badge updates
+  background/   # Chrome service worker / Firefox event page: fetching, scheduling, badge
     services/   # UsageService — fetches & parses provider APIs
   content/      # claude.ai overlay (React in Shadow DOM) + z.ai token bridge
   welcome/      # First-run onboarding page opened on install
@@ -87,18 +122,22 @@ src/
 ```
 
 **Data flow:** the background worker fetches usage, writes a `UsageState` snapshot to
-`chrome.storage.local`, and updates the badge. The popup and overlay read that
-snapshot and subscribe to `chrome.storage.onChanged`, so every surface stays in sync.
+`browser.storage.local`, and updates the badge. The popup and overlay read that
+snapshot and subscribe to `browser.storage.onChanged`, so every surface stays in sync.
 Each provider is saved as soon as its request completes, without waiting for slower
 providers. Requests bypass the HTTP cache and time out after 10 seconds; failed
 requests retain the last successful snapshot and its original update time.
 The worker checks the configured refresh mode whenever it starts and when settings
 change: it restores the recurring alarm in automatic mode and clears it in manual
-mode. Chrome may delay alarms while the device is asleep.
+mode. Browsers may delay alarms while the device is asleep.
+
+Chrome sources are maintained in `main` and Firefox sources in `firefox`.
+Chrome uses `chrome.*` APIs and a service worker; Firefox uses `browser.*` APIs
+and a background event page. Both builds expose the same usage and display settings.
 
 **Localization:** every user-visible string goes through `msg()`
 (`src/shared/i18n.ts`), which reads `public/_locales/<locale>/messages.json`.
-All 53 Chrome Web Store languages are translated and the release tests enforce
+All 53 supported languages are translated and the release tests enforce
 that they expose the same keys. The one exception is the overlay's "LIMITS"
 side tab, which stays in English everywhere by design.
 
@@ -118,7 +157,11 @@ autocapture, no exception tracking, no session recording. Alongside the message 
 event carries the extension version, browser version, UI language, and which provider
 cards are enabled or failing — the context needed to act on the report. The reporter is
 identified only by a random UUID generated locally on first use
-(`ai_usage_distinct_id` in `chrome.storage.local`).
+(`ai_usage_distinct_id` in `browser.storage.local`).
+
+Firefox asks for optional data collection consent when Send is pressed. Reports
+are sent only while that consent is granted; it can be revoked in `about:addons`.
+Session authentication is sent only to the corresponding providers to read usage.
 
 Reporting is configured through the build environment (see `.env.example`):
 
@@ -142,7 +185,7 @@ issues link instead of the problem-report dialog.
 
 - Node.js 20 or newer
 - pnpm 9.15.0 via Corepack
-- Chrome or another Chromium browser that supports Manifest V3 extensions
+- Chrome or another Chromium browser with Manifest V3 support, or Firefox 140 or newer
 
 ### Install dependencies
 
@@ -168,6 +211,8 @@ pnpm test
 pnpm build
 ```
 
+On the `firefox` branch, also run `pnpm lint:firefox` after building.
+
 ## Scripts
 
 | Command              | Description                                   |
@@ -175,7 +220,8 @@ pnpm build
 | `pnpm dev`           | Build and watch for development.              |
 | `pnpm bump`          | Bump `package.json` and `manifest.json` patch versions. |
 | `pnpm build`         | Type-check, then produce a production build.  |
-| `pnpm release`       | Test, build, and package `dist/` into `release/*.zip`. |
+| `pnpm release`       | Test, build, and package a Chrome ZIP (`main`) or unsigned Firefox XPI (`firefox`). |
+| `pnpm lint:firefox`  | Validate the Firefox build with Mozilla's extension linter (`firefox` branch). |
 | `pnpm typecheck`     | Run `tsc` with no emit.                       |
 | `pnpm test`          | Run usage-refresh regression tests and store release-gate checks. |
 | `pnpm lint`          | Lint `src/` with ESLint.                      |

@@ -1040,14 +1040,14 @@ export class UsageService {
   static async fetchMiMoUsage(): Promise<MiMoUsage | null> {
     const [balance, detail, usage] = await Promise.all([
       fetchJson(ENDPOINTS.mimoBalance, { headers: { 'X-Timezone': 'UTC' } }),
-      fetchJson(ENDPOINTS.mimoPlanDetail, { headers: { 'X-Timezone': 'UTC' } }),
-      fetchJson(ENDPOINTS.mimoPlanUsage, { headers: { 'X-Timezone': 'UTC' } }),
+      fetchJson(ENDPOINTS.mimoPlanDetail, { headers: { 'X-Timezone': 'UTC' } }).catch(() => null),
+      fetchJson(ENDPOINTS.mimoPlanUsage, { headers: { 'X-Timezone': 'UTC' } }).catch(() => null),
     ]);
     if (!balance.ok) return null;
     return buildMiMoUsage(
       balance.data,
-      detail.ok ? detail.data : null,
-      usage.ok ? usage.data : null,
+      detail?.ok ? detail.data : null,
+      usage?.ok ? usage.data : null,
     );
   }
 
@@ -1126,13 +1126,14 @@ export class UsageService {
   private static async resolveClaudeOrgId(): Promise<string | null> {
     const cached = await browser.storage.local.get(STORAGE_KEYS.claudeOrgId);
     const stored = readString(cached[STORAGE_KEYS.claudeOrgId]);
-    if (stored) return stored;
-
     const fromCookie = await this.claudeOrgFromCookie();
     if (fromCookie) {
-      await browser.storage.local.set({ [STORAGE_KEYS.claudeOrgId]: fromCookie });
+      if (fromCookie !== stored) {
+        await browser.storage.local.set({ [STORAGE_KEYS.claudeOrgId]: fromCookie });
+      }
       return fromCookie;
     }
+    if (stored) return stored;
 
     const orgs = await fetchJsonRaw(ENDPOINTS.claudeOrgs);
     const fromApi = resolveOrgFromList(orgs);

@@ -27,7 +27,7 @@ What actually happened.
 ## Environment
 
 - AI Usage Tracker version:
-- Chrome version:
+- Firefox version:
 - OS:
 
 ## Additional Context

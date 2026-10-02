@@ -20,7 +20,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["vite/client", "chrome", "dom-chromium-ai"],
+    "types": ["vite/client", "firefox-webext-browser", "dom-chromium-ai"],
     "baseUrl": ".",
     "paths": {
       "@sidepanel/*": [

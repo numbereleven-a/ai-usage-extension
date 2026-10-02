@@ -69,7 +69,7 @@ describe('percentage display preferences', () => {
     let title;
     const { updateBadge } = loadTypeScript('src/background/badge.ts', {
       globals: {
-        chrome: {
+        browser: {
           runtime: { getURL: (path) => path },
           action: {
             setIcon: async () => {},

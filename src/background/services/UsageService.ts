@@ -906,12 +906,12 @@ const fetchJsonRaw = async (url: string, init?: RequestInit): Promise<unknown> =
 
 export class UsageService {
   static async getUsageState(): Promise<UsageState> {
-    const stored = await chrome.storage.local.get(STORAGE_KEYS.usageState);
+    const stored = await browser.storage.local.get(STORAGE_KEYS.usageState);
     return (stored[STORAGE_KEYS.usageState] ?? {}) as UsageState;
   }
 
   static async saveUsageState(state: UsageState): Promise<void> {
-    await chrome.storage.local.set({ [STORAGE_KEYS.usageState]: state });
+    await browser.storage.local.set({ [STORAGE_KEYS.usageState]: state });
   }
 
   static async refreshAllUsage(): Promise<UsageState> {
@@ -977,7 +977,7 @@ export class UsageService {
     if (!result.ok) {
       const rejectedByClaude = result.status === 401 || result.status === 403;
       if (rejectedByClaude && !result.challenged) {
-        await chrome.storage.local.remove(STORAGE_KEYS.claudeOrgId);
+        await browser.storage.local.remove(STORAGE_KEYS.claudeOrgId);
       }
       return null;
     }
@@ -1011,7 +1011,7 @@ export class UsageService {
   }
 
   static async fetchKimiUsage(): Promise<KimiUsage | null> {
-    const cookie = await chrome.cookies.get({ url: 'https://www.kimi.com', name: 'kimi-auth' });
+    const cookie = await browser.cookies.get({ url: 'https://www.kimi.com', name: 'kimi-auth' });
     const token = readString(cookie?.value);
     if (!token) return null;
 
@@ -1052,7 +1052,7 @@ export class UsageService {
   }
 
   static async fetchGlmUsage(): Promise<GlmFetch> {
-    const stored = await chrome.storage.local.get([STORAGE_KEYS.glmApiKey, STORAGE_KEYS.glmToken]);
+    const stored = await browser.storage.local.get([STORAGE_KEYS.glmApiKey, STORAGE_KEYS.glmToken]);
     const apiKey = readString(stored[STORAGE_KEYS.glmApiKey]);
     const sessionToken = readString(stored[STORAGE_KEYS.glmToken]);
 
@@ -1124,27 +1124,27 @@ export class UsageService {
   }
 
   private static async resolveClaudeOrgId(): Promise<string | null> {
-    const cached = await chrome.storage.local.get(STORAGE_KEYS.claudeOrgId);
+    const cached = await browser.storage.local.get(STORAGE_KEYS.claudeOrgId);
     const stored = readString(cached[STORAGE_KEYS.claudeOrgId]);
     if (stored) return stored;
 
     const fromCookie = await this.claudeOrgFromCookie();
     if (fromCookie) {
-      await chrome.storage.local.set({ [STORAGE_KEYS.claudeOrgId]: fromCookie });
+      await browser.storage.local.set({ [STORAGE_KEYS.claudeOrgId]: fromCookie });
       return fromCookie;
     }
 
     const orgs = await fetchJsonRaw(ENDPOINTS.claudeOrgs);
     const fromApi = resolveOrgFromList(orgs);
     if (fromApi) {
-      await chrome.storage.local.set({ [STORAGE_KEYS.claudeOrgId]: fromApi });
+      await browser.storage.local.set({ [STORAGE_KEYS.claudeOrgId]: fromApi });
     }
     return fromApi;
   }
 
   private static async claudeOrgFromCookie(): Promise<string | null> {
     try {
-      const cookie = await chrome.cookies.get({
+      const cookie = await browser.cookies.get({
         url: 'https://claude.ai',
         name: 'lastActiveOrg',
       });

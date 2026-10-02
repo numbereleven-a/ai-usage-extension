@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => ({
 		plugins: [
 			react(),
 			webExtension({
+				browser: 'firefox',
 				disableAutoLaunch: true,
 				additionalInputs: ['src/welcome.html'],
 			}),

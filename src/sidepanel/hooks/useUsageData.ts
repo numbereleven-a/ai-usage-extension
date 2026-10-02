@@ -62,7 +62,7 @@ export const useUsageData = (): UsageData => {
     });
 
     const listener = (
-      changes: Record<string, chrome.storage.StorageChange>,
+      changes: Record<string, browser.storage.StorageChange>,
       areaName: string,
     ): void => {
       if (areaName !== 'local') {
@@ -80,10 +80,10 @@ export const useUsageData = (): UsageData => {
       }
     };
 
-    chrome.storage.onChanged.addListener(listener);
+    browser.storage.onChanged.addListener(listener);
     return () => {
       active = false;
-      chrome.storage.onChanged.removeListener(listener);
+      browser.storage.onChanged.removeListener(listener);
     };
   }, []);
 

@@ -22,7 +22,7 @@ export const PROVIDER_DETAILS: Record<ProviderId, { name: string; icon: string }
 
 /** Resolves a file shipped in the extension root (icons/…) from an extension page. */
 export const extensionAsset = (path: string): string =>
-  globalThis.chrome?.runtime?.getURL?.(path) ?? `/${path}`;
+  globalThis.browser?.runtime?.getURL?.(path) ?? `/${path}`;
 
 export const APP_ICON = extensionAsset('icons/icon-128.png');
 

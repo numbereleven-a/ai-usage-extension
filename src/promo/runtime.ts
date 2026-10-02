@@ -11,7 +11,7 @@ export const loadMessages = async (locale: Locale): Promise<LocaleMessages> => {
 };
 
 export const installRuntimeStub = (messages: LocaleMessages): void => {
-  (globalThis as { chrome?: unknown }).chrome = {
+  (globalThis as { browser?: unknown }).browser = {
     i18n: {
       getMessage: (name: string, substitutions?: string | string[]): string => {
         const template = messages[name]?.message;

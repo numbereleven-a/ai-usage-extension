@@ -137,7 +137,7 @@ export const App = () => {
         <div className="au-topbar__actions">
           <button
             type="button"
-            onClick={() => void chrome.runtime.openOptionsPage()}
+            onClick={() => void browser.runtime.openOptionsPage()}
             className="au-btn-refresh"
             title="Settings"
             aria-label="Settings"

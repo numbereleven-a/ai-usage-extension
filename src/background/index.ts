@@ -57,19 +57,19 @@ const syncRefreshAlarm = (): Promise<void> => {
     .then(async () => {
       const { refresh } = await readExtensionSettings();
       if (refresh.mode === 'manual') {
-        await chrome.alarms.clear(REFRESH_ALARM);
+        await browser.alarms.clear(REFRESH_ALARM);
         return;
       }
-      const alarm = await chrome.alarms.get(REFRESH_ALARM);
+      const alarm = await browser.alarms.get(REFRESH_ALARM);
       if (!alarm || alarm.periodInMinutes !== refresh.intervalMinutes) {
-        await chrome.alarms.create(REFRESH_ALARM, { periodInMinutes: refresh.intervalMinutes });
+        await browser.alarms.create(REFRESH_ALARM, { periodInMinutes: refresh.intervalMinutes });
       }
     });
   return alarmUpdateQueue;
 };
 
 if (UNINSTALL_FORM_URL) {
-  void Promise.resolve(chrome.runtime.setUninstallURL(UNINSTALL_FORM_URL)).catch(() => undefined);
+  void Promise.resolve(browser.runtime.setUninstallURL(UNINSTALL_FORM_URL)).catch(() => undefined);
 }
 
 const languageReady = applyStoredLanguage().catch(() => undefined);
@@ -87,25 +87,25 @@ void languageReady
 // Check on every worker start without postponing an existing alarm.
 void syncRefreshAlarm().catch(() => undefined);
 
-chrome.runtime.onInstalled.addListener((details) => {
+browser.runtime.onInstalled.addListener((details) => {
   void refreshAutomatically().catch(() => undefined);
 
   if (details.reason === 'install') {
-    void chrome.tabs.create({ url: chrome.runtime.getURL('src/welcome.html') });
+    void browser.tabs.create({ url: browser.runtime.getURL('src/welcome.html') });
   }
 });
 
-chrome.runtime.onStartup.addListener(() => {
+browser.runtime.onStartup.addListener(() => {
   void refreshAutomatically().catch(() => undefined);
 });
 
-chrome.alarms.onAlarm.addListener((alarm) => {
+browser.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === REFRESH_ALARM) {
     void refreshAutomatically().catch(() => undefined);
   }
 });
 
-chrome.storage.onChanged.addListener((changes, areaName) => {
+browser.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'local' && changes[STORAGE_KEYS.usageState]) {
     void queueBadgeUpdate((changes[STORAGE_KEYS.usageState].newValue ?? {}) as UsageState).catch(
       () => undefined,
@@ -127,10 +127,10 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 });
 
 const storeGlmToken = async (token: string): Promise<void> => {
-  const stored = await chrome.storage.local.get(STORAGE_KEYS.glmToken);
+  const stored = await browser.storage.local.get(STORAGE_KEYS.glmToken);
   if (stored[STORAGE_KEYS.glmToken] === token) return;
 
-  await chrome.storage.local.set({ [STORAGE_KEYS.glmToken]: token });
+  await browser.storage.local.set({ [STORAGE_KEYS.glmToken]: token });
   await refreshAfterInFlight();
 };
 
@@ -139,7 +139,7 @@ const collectLocaleMessages = async (): Promise<Record<string, string> | null> =
   return language === 'auto' ? null : loadLocaleMessages(language);
 };
 
-chrome.runtime.onMessage.addListener(
+browser.runtime.onMessage.addListener(
   (
     message: ExtensionMessage,
     _sender,

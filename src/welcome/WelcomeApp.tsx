@@ -6,8 +6,8 @@ import { StepPin } from './steps/StepPin';
 import { STAGE_KEYFRAMES, THEME_VARS } from './theme';
 
 export default function WelcomeApp() {
-  const iconUrl = chrome.runtime.getURL('icons/icon-128.png');
-  const videoUrl = chrome.runtime.getURL('onboarding.webp');
+  const iconUrl = browser.runtime.getURL('icons/icon-128.png');
+  const videoUrl = browser.runtime.getURL('onboarding.webp');
 
   return (
     <div

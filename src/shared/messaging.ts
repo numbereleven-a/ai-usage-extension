@@ -7,11 +7,11 @@ import type {
 } from './types';
 
 /**
- * Read the last persisted usage snapshot from `chrome.storage.local`.
+ * Read the last persisted usage snapshot from `browser.storage.local`.
  * Safe to call from any extension context.
  */
 export const readUsageState = async (): Promise<UsageState> => {
-  const data = await chrome.storage.local.get(STORAGE_KEYS.usageState);
+  const data = await browser.storage.local.get(STORAGE_KEYS.usageState);
   return (data[STORAGE_KEYS.usageState] ?? {}) as UsageState;
 };
 
@@ -21,7 +21,7 @@ export const readUsageState = async (): Promise<UsageState> => {
  */
 export const requestUsageRefresh = async (automatic = false): Promise<UsageState> => {
   const message: ExtensionMessage = { type: 'REFRESH_USAGE', automatic };
-  const response = (await chrome.runtime.sendMessage(message)) as RefreshUsageResponse | undefined;
+  const response = (await browser.runtime.sendMessage(message)) as RefreshUsageResponse | undefined;
 
   if (!response) {
     throw new Error('No response from the background worker');
@@ -41,7 +41,7 @@ export const requestUsageRefresh = async (automatic = false): Promise<UsageState
  */
 export const requestLocaleMessages = async (): Promise<Record<string, string> | null> => {
   const message: ExtensionMessage = { type: 'GET_LOCALE_MESSAGES' };
-  const response = (await chrome.runtime.sendMessage(message)) as
+  const response = (await browser.runtime.sendMessage(message)) as
     | LocaleMessagesResponse
     | undefined;
 

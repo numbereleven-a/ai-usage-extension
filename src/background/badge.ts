@@ -10,7 +10,7 @@ type IconSize = (typeof ICON_SIZES)[number];
 type ActionIconData = Record<IconSize, ImageData>;
 
 const loadIconData = async (range: number, size: IconSize): Promise<[IconSize, ImageData]> => {
-  const response = await fetch(chrome.runtime.getURL(iconPath(range)));
+  const response = await fetch(browser.runtime.getURL(iconPath(range)));
   if (!response.ok) {
     throw new Error(`Unable to load badge icon for ${range}%`);
   }
@@ -36,7 +36,7 @@ const actionIconData = async (range: number): Promise<ActionIconData> =>
   ) as ActionIconData;
 
 const setActionIcon = async (range: number): Promise<void> => {
-  await chrome.action.setIcon({ imageData: await actionIconData(range) });
+  await browser.action.setIcon({ imageData: await actionIconData(range) });
 };
 
 const iconRange = (percent: number): number => {
@@ -107,8 +107,8 @@ const summarizeUsage = (state: UsageState, settings: ExtensionSettings): UsageSu
 const resetBadge = async (): Promise<void> => {
   await Promise.all([
     setActionIcon(10),
-    chrome.action.setBadgeText({ text: '' }),
-    chrome.action.setTitle({ title: msg('appShortName') }),
+    browser.action.setBadgeText({ text: '' }),
+    browser.action.setTitle({ title: msg('appShortName') }),
   ]);
 };
 
@@ -121,7 +121,7 @@ export const updateBadge = async (state: UsageState): Promise<void> => {
 
   await Promise.all([
     setActionIcon(iconRange(summary.percent)),
-    chrome.action.setBadgeText({ text: '' }),
-    chrome.action.setTitle({ title: summary.tooltip }),
+    browser.action.setBadgeText({ text: '' }),
+    browser.action.setTitle({ title: summary.tooltip }),
   ]);
 };

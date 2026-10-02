@@ -49,7 +49,7 @@ const FALLBACK_MESSAGES: Record<string, string> = {
   welcomeStepPin: 'Click the extensions icon {icon} in the toolbar, then pin AI Usage Tracker',
   welcomeStepOpen: 'Click the pinned icon to see your usage',
   welcomeCta: 'Get started',
-  welcomeCtaHint: 'You can unpin it later from Chrome.',
+  welcomeCtaHint: 'You can unpin it later from Firefox.',
   reportProblem: 'Report a problem',
   reportTitle: 'Report a problem',
   reportDescription: 'Describe what went wrong. The report goes straight to the maintainers.',
@@ -154,7 +154,7 @@ let overrides: Record<string, string> | null = null;
 
 /**
  * Renders the UI in a language other than the browser's. Pass `null` to fall
- * back to `chrome.i18n`. Must run before any module builds a label table with
+ * back to `browser.i18n`. Must run before any module builds a label table with
  * `msg()` at import time.
  */
 export const setLocaleMessages = (messages: Record<string, string> | null): void => {
@@ -167,7 +167,7 @@ export const msg = (name: string, substitutions?: string | string[]): string => 
     return fill(override, substitutions);
   }
 
-  const value = globalThis.chrome?.i18n?.getMessage(name, substitutions);
+  const value = globalThis.browser?.i18n?.getMessage(name, substitutions);
   if (value) {
     return value;
   }

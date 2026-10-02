@@ -16,7 +16,7 @@ const providers = ['Claude', 'Codex', 'MiniMax', 'Kimi', 'Cursor', 'MiMo', 'Qwen
 function serviceHarness(initial = {}, globals = {}) {
   let stored = structuredClone(initial);
   const writes = [];
-  const chrome = {
+  const browser = {
     storage: {
       local: {
         get: async () => ({ ai_usage_state: structuredClone(stored) }),
@@ -28,9 +28,9 @@ function serviceHarness(initial = {}, globals = {}) {
     },
   };
   const { UsageService } = loadTypeScript('src/background/services/UsageService.ts', {
-    globals: { chrome, ...globals },
+    globals: { browser, ...globals },
   });
-  return { UsageService, writes, read: () => stored, chrome };
+  return { UsageService, writes, read: () => stored, browser };
 }
 
 function stubProviders(service) {
@@ -70,15 +70,15 @@ describe('provider refresh', () => {
   });
 
   it('serializes storage writes even when providers finish together', async () => {
-    const { UsageService, chrome, read } = serviceHarness();
+    const { UsageService, browser, read } = serviceHarness();
     stubProviders(UsageService);
     UsageService.fetchClaudeUsage = async () => sample(10);
     UsageService.fetchMiMoUsage = async () => sample(20);
     const firstWrite = deferred();
-    const save = chrome.storage.local.set;
+    const save = browser.storage.local.set;
     let concurrent = 0;
     let peak = 0;
-    chrome.storage.local.set = async (value) => {
+    browser.storage.local.set = async (value) => {
       concurrent++;
       peak = Math.max(peak, concurrent);
       const snapshot = structuredClone(value);
@@ -97,14 +97,14 @@ describe('provider refresh', () => {
   });
 
   it('waits for pending providers after a storage error and allows later writes', async () => {
-    const { UsageService, chrome, read } = serviceHarness();
+    const { UsageService, browser, read } = serviceHarness();
     stubProviders(UsageService);
     const slow = deferred();
     UsageService.fetchQwenUsage = () => slow.promise;
     UsageService.fetchMiMoUsage = async () => sample(15);
-    const save = chrome.storage.local.set;
+    const save = browser.storage.local.set;
     let failed = false;
-    chrome.storage.local.set = async (value) => {
+    browser.storage.local.set = async (value) => {
       if (!failed) {
         failed = true;
         throw new Error('storage unavailable');
@@ -205,7 +205,7 @@ describe('provider refresh', () => {
 function workerHarness(alarm, refresh = { mode: 'auto', intervalMinutes: 5 }) {
   const calls = { refresh: 0, create: [], clear: [], badges: [] };
   const pending = deferred();
-  const chrome = {
+  const browser = {
     runtime: {
       onInstalled: event(),
       onStartup: event(),
@@ -222,7 +222,7 @@ function workerHarness(alarm, refresh = { mode: 'auto', intervalMinutes: 5 }) {
     tabs: { create: async () => {} },
   };
   loadTypeScript('src/background/index.ts', {
-    globals: { chrome },
+    globals: { browser },
     mocks: {
       '../shared/language': { applyStoredLanguage: async () => {} },
       '../shared/locales': { loadLocaleMessages: async () => ({}) },
@@ -241,7 +241,7 @@ function workerHarness(alarm, refresh = { mode: 'auto', intervalMinutes: 5 }) {
     },
   });
   return {
-    chrome,
+    browser,
     calls,
     pending,
     setRefresh: (next) => {
@@ -263,13 +263,13 @@ describe('worker startup and refresh scheduling', () => {
   });
 
   it('preserves an existing alarm and shares a running refresh across all triggers', async () => {
-    const { chrome, calls, pending } = workerHarness({ name: 'refreshUsage', periodInMinutes: 5 });
+    const { browser, calls, pending } = workerHarness({ name: 'refreshUsage', periodInMinutes: 5 });
     await flush();
-    chrome.runtime.onStartup.emit();
-    chrome.runtime.onInstalled.emit({ reason: 'update' });
-    chrome.alarms.onAlarm.emit({ name: 'refreshUsage' });
+    browser.runtime.onStartup.emit();
+    browser.runtime.onInstalled.emit({ reason: 'update' });
+    browser.alarms.onAlarm.emit({ name: 'refreshUsage' });
     const response = deferred();
-    chrome.runtime.onMessage.emit({ type: 'REFRESH_USAGE' }, {}, response.resolve);
+    browser.runtime.onMessage.emit({ type: 'REFRESH_USAGE' }, {}, response.resolve);
     assert.equal(calls.refresh, 1);
     assert.equal(calls.create.length, 0);
     pending.resolve({ mimo: sample(7) });
@@ -277,9 +277,9 @@ describe('worker startup and refresh scheduling', () => {
   });
 
   it('updates the badge from partial snapshots before the refresh completes', async () => {
-    const { chrome, calls, pending } = workerHarness({ name: 'refreshUsage', periodInMinutes: 5 });
+    const { browser, calls, pending } = workerHarness({ name: 'refreshUsage', periodInMinutes: 5 });
     await flush();
-    chrome.storage.onChanged.emit({ ai_usage_state: { newValue: { mimo: sample(8) } } }, 'local');
+    browser.storage.onChanged.emit({ ai_usage_state: { newValue: { mimo: sample(8) } } }, 'local');
     await flush();
     assert.equal(calls.badges.at(-1).mimo.session.percentage, 8);
     pending.resolve({});
@@ -299,20 +299,20 @@ describe('worker startup and refresh scheduling', () => {
   }
 
   it('allows the next alarm to retry after a failed refresh', async () => {
-    const { chrome, calls, pending } = workerHarness({ name: 'refreshUsage', periodInMinutes: 5 });
+    const { browser, calls, pending } = workerHarness({ name: 'refreshUsage', periodInMinutes: 5 });
     await flush();
     pending.reject(new Error('offline'));
     await flush();
-    chrome.alarms.onAlarm.emit({ name: 'unrelated' });
+    browser.alarms.onAlarm.emit({ name: 'unrelated' });
     assert.equal(calls.refresh, 1);
-    chrome.alarms.onAlarm.emit({ name: 'refreshUsage' });
+    browser.alarms.onAlarm.emit({ name: 'refreshUsage' });
     await flush();
     assert.equal(calls.refresh, 2);
     await flush();
   });
 
   it('removes the alarm and skips every automatic trigger in manual mode, but permits Refresh', async () => {
-    const { chrome, calls, pending } = workerHarness(
+    const { browser, calls, pending } = workerHarness(
       { name: 'refreshUsage', periodInMinutes: 5 },
       { mode: 'manual', intervalMinutes: 5 },
     );
@@ -320,17 +320,17 @@ describe('worker startup and refresh scheduling', () => {
     assert.deepEqual(calls.clear, ['refreshUsage']);
     assert.equal(calls.create.length, 0);
     assert.equal(calls.refresh, 0);
-    chrome.runtime.onStartup.emit();
-    chrome.runtime.onInstalled.emit({ reason: 'update' });
-    chrome.alarms.onAlarm.emit({ name: 'refreshUsage' });
-    chrome.storage.onChanged.emit({ glm_api_key: { newValue: 'synthetic-key' } }, 'local');
-    chrome.runtime.onMessage.emit(
+    browser.runtime.onStartup.emit();
+    browser.runtime.onInstalled.emit({ reason: 'update' });
+    browser.alarms.onAlarm.emit({ name: 'refreshUsage' });
+    browser.storage.onChanged.emit({ glm_api_key: { newValue: 'synthetic-key' } }, 'local');
+    browser.runtime.onMessage.emit(
       { type: 'SET_GLM_TOKEN', token: 'synthetic-token' },
       {},
       () => {},
     );
     const automatic = deferred();
-    chrome.runtime.onMessage.emit(
+    browser.runtime.onMessage.emit(
       { type: 'REFRESH_USAGE', automatic: true },
       {},
       automatic.resolve,
@@ -339,14 +339,14 @@ describe('worker startup and refresh scheduling', () => {
     await flush();
     assert.equal(calls.refresh, 0);
     const manual = deferred();
-    chrome.runtime.onMessage.emit({ type: 'REFRESH_USAGE' }, {}, manual.resolve);
+    browser.runtime.onMessage.emit({ type: 'REFRESH_USAGE' }, {}, manual.resolve);
     assert.equal(calls.refresh, 1);
     pending.resolve({ mimo: sample(13) });
     assert.equal((await manual.promise).data.mimo.session.percentage, 13);
   });
 
   it('reschedules custom intervals and applies manual/automatic changes immediately', async () => {
-    const { chrome, calls, pending, setRefresh } = workerHarness(undefined, {
+    const { browser, calls, pending, setRefresh } = workerHarness(undefined, {
       mode: 'auto',
       intervalMinutes: 12.5,
     });
@@ -355,14 +355,14 @@ describe('worker startup and refresh scheduling', () => {
     pending.resolve({});
     await flush();
     setRefresh({ mode: 'manual', intervalMinutes: 12.5 });
-    chrome.storage.onChanged.emit({ ai_usage_settings: { newValue: {} } }, 'local');
+    browser.storage.onChanged.emit({ ai_usage_settings: { newValue: {} } }, 'local');
     await flush();
     assert.deepEqual(calls.clear, ['refreshUsage']);
-    chrome.alarms.onAlarm.emit({ name: 'refreshUsage' });
+    browser.alarms.onAlarm.emit({ name: 'refreshUsage' });
     await flush();
     assert.equal(calls.refresh, 1);
     setRefresh({ mode: 'auto', intervalMinutes: 30 });
-    chrome.storage.onChanged.emit({ ai_usage_settings: { newValue: {} } }, 'local');
+    browser.storage.onChanged.emit({ ai_usage_settings: { newValue: {} } }, 'local');
     await flush();
     assert.equal(calls.create.at(-1)[1].periodInMinutes, 30);
   });
@@ -382,7 +382,7 @@ function popupHarness(initial = {}, mode = 'auto', saveFailure = false) {
   };
   const saves = [];
   const { useUsageData } = loadTypeScript('src/sidepanel/hooks/useUsageData.ts', {
-    globals: { chrome: { storage: { onChanged: changes } } },
+    globals: { browser: { storage: { onChanged: changes } } },
     mocks: {
       react: {
         useState: (value) => {

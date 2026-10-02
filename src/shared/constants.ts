@@ -40,7 +40,11 @@ export const POSTHOG_HOST = (
   import.meta.env.VITE_POSTHOG_HOST?.trim() || 'https://eu.i.posthog.com'
 ).replace(/\/$/, '');
 
-export const GITHUB_REPO_URL = 'https://github.com/cupcakedev/ai-usage-extension';
+export const GITHUB_REPO_URL = 'https://github.com/numbereleven-a/ai-usage-extension';
+
+export const REPORT_DATA_PERMISSIONS: browser.permissions.Permissions = {
+  data_collection: ['technicalAndInteraction', 'personallyIdentifyingInfo'],
+};
 
 export const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues/new`;
 

@@ -58,7 +58,7 @@ jobs:
             echo "::warning::Problem reporting is not configured. The release will use the GitHub issues link."
           fi
 
-      - name: Build release zip
+      - name: Build Firefox release
         if: steps.check.outputs.exists == 'false'
         env:
           VITE_POSTHOG_PROJECT_TOKEN: ${{ secrets.VITE_POSTHOG_PROJECT_TOKEN }}
@@ -75,4 +75,4 @@ jobs:
           gh release create "v$VERSION" \
             --title "v$VERSION" \
             --generate-notes \
-            "release/ai-usage-tracker-$VERSION.zip"
+            "release/ai-usage-tracker-$VERSION-firefox.xpi"

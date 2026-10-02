@@ -170,7 +170,7 @@ const UsageOverlay: React.FC = () => {
     let active = true;
 
     const hydrate = async (): Promise<void> => {
-      const snapshot = await chrome.storage.local.get([
+      const snapshot = await browser.storage.local.get([
         STORAGE_KEYS.usageState,
         enabledKey,
         collapsedKey,
@@ -194,7 +194,7 @@ const UsageOverlay: React.FC = () => {
     void hydrate();
 
     const listener = (
-      changes: Record<string, chrome.storage.StorageChange>,
+      changes: Record<string, browser.storage.StorageChange>,
       areaName: string,
     ): void => {
       if (areaName !== 'local') {
@@ -220,10 +220,10 @@ const UsageOverlay: React.FC = () => {
       }
     };
 
-    chrome.storage.onChanged.addListener(listener);
+    browser.storage.onChanged.addListener(listener);
     return () => {
       active = false;
-      chrome.storage.onChanged.removeListener(listener);
+      browser.storage.onChanged.removeListener(listener);
     };
   }, []);
 
@@ -255,7 +255,7 @@ const UsageOverlay: React.FC = () => {
   const toggleCollapsed = useCallback((): void => {
     setCollapsed((prev) => {
       const next = !prev;
-      void chrome.storage.local.set({ [collapsedKey]: next });
+      void browser.storage.local.set({ [collapsedKey]: next });
       return next;
     });
   }, []);

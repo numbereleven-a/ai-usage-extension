@@ -16,7 +16,7 @@ interface UseOptionsSettingsResult {
   resetSettings: () => void;
 }
 
-/** Owns local optimistic state and serializes writes to chrome.storage.local. */
+/** Owns local optimistic state and serializes writes to browser.storage.local. */
 export const useOptionsSettings = (): UseOptionsSettingsResult => {
   const [settings, setSettings] = useState<ExtensionSettings | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('loading');

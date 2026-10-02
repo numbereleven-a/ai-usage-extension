@@ -3,7 +3,7 @@ import { STORAGE_KEYS } from '../../shared/constants';
 import { msg } from '../../shared/i18n';
 
 const readStoredKey = async (): Promise<string> => {
-  const stored = await chrome.storage.local.get(STORAGE_KEYS.glmApiKey);
+  const stored = await browser.storage.local.get(STORAGE_KEYS.glmApiKey);
   const value = stored[STORAGE_KEYS.glmApiKey];
   return typeof value === 'string' ? value : '';
 };
@@ -25,8 +25,8 @@ export const GlmCredentialField = () => {
     const trimmed = value.trim();
     setValue(trimmed);
     void (trimmed
-      ? chrome.storage.local.set({ [STORAGE_KEYS.glmApiKey]: trimmed })
-      : chrome.storage.local.remove(STORAGE_KEYS.glmApiKey));
+      ? browser.storage.local.set({ [STORAGE_KEYS.glmApiKey]: trimmed })
+      : browser.storage.local.remove(STORAGE_KEYS.glmApiKey));
   };
 
   return (

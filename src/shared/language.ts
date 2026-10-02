@@ -29,7 +29,7 @@ export const applyStoredLanguage = async (): Promise<LanguagePreference> => {
 
 /** Calls back whenever the language preference itself changes. */
 export const watchLanguage = (onChange: (language: LanguagePreference) => void): (() => void) => {
-  if (!globalThis.chrome?.storage?.onChanged) {
+  if (!globalThis.browser?.storage?.onChanged) {
     return () => undefined;
   }
 
@@ -37,7 +37,7 @@ export const watchLanguage = (onChange: (language: LanguagePreference) => void):
     normalizeLanguage((value as { language?: unknown } | undefined)?.language);
 
   const listener = (
-    changes: Record<string, chrome.storage.StorageChange>,
+    changes: Record<string, browser.storage.StorageChange>,
     areaName: string,
   ): void => {
     const change = changes[STORAGE_KEYS.extensionSettings];
@@ -53,6 +53,6 @@ export const watchLanguage = (onChange: (language: LanguagePreference) => void):
     onChange(next);
   };
 
-  chrome.storage.onChanged.addListener(listener);
-  return () => chrome.storage.onChanged.removeListener(listener);
+  browser.storage.onChanged.addListener(listener);
+  return () => browser.storage.onChanged.removeListener(listener);
 };

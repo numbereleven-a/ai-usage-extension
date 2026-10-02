@@ -1,6 +1,10 @@
 import { PostHog } from 'posthog-js/dist/module.no-external';
 
-import { POSTHOG_HOST, POSTHOG_PROJECT_TOKEN } from '../../shared/constants';
+import {
+  POSTHOG_HOST,
+  POSTHOG_PROJECT_TOKEN,
+  REPORT_DATA_PERMISSIONS,
+} from '../../shared/constants';
 import { sharedDistinctId } from '../../shared/analytics/distinctId';
 import type {
   AnalyticsContext,
@@ -11,12 +15,12 @@ import { readExtensionSettings } from '../../shared/settings';
 import { UsageService } from './UsageService';
 import type { ProviderId, UsageState } from '../../shared/types';
 
-const manifestVersion = (): string => chrome.runtime.getManifest?.().version ?? 'unknown';
+const manifestVersion = (): string => browser.runtime.getManifest?.().version ?? 'unknown';
 
-const uiLanguage = (): string => chrome.i18n?.getUILanguage?.() ?? 'unknown';
+const uiLanguage = (): string => browser.i18n?.getUILanguage?.() ?? 'unknown';
 
 const browserVersion = (): string | undefined =>
-  /Chrome\/([\d.]+)/.exec(globalThis.navigator?.userAgent ?? '')?.[1];
+  /Firefox\/([\d.]+)/.exec(globalThis.navigator?.userAgent ?? '')?.[1];
 
 const providersWithData = (state: UsageState): ProviderId[] =>
   (Object.keys(state) as Array<keyof UsageState>).filter(
@@ -84,6 +88,7 @@ export const track = async <Name extends AnalyticsEventName>(
   if (!isAnalyticsConfigured()) return false;
 
   try {
+    if (!(await browser.permissions.contains(REPORT_DATA_PERMISSIONS))) return false;
     const posthog = await client();
     posthog.capture(event, { ...properties, ...(await dynamicProperties()), context });
     return true;

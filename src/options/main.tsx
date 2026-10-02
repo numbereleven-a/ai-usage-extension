@@ -15,7 +15,7 @@ const start = async (): Promise<void> => {
 
   document.title = msg('optionsTitle');
   document.documentElement.lang =
-    language === 'auto' ? chrome.i18n.getUILanguage() : language.replace('_', '-');
+    language === 'auto' ? browser.i18n.getUILanguage() : language.replace('_', '-');
 
   createRoot(document.getElementById('root')!).render(<OptionsApp />);
 

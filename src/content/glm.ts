@@ -25,7 +25,7 @@ const publishToken = (): void => {
   lastPublished = token;
   const message: ExtensionMessage = { type: 'SET_GLM_TOKEN', token };
   try {
-    void chrome.runtime.sendMessage(message).catch(() => {
+    void browser.runtime.sendMessage(message).catch(() => {
       lastPublished = null;
     });
   } catch {

@@ -61,7 +61,7 @@ export const UI_LOCALES: UiLocale[] = [
 
 export const UI_LOCALE_IDS: string[] = UI_LOCALES.map((locale) => locale.id);
 
-/** `auto` follows the browser UI language, exactly as Chrome does by default. */
+/** `auto` follows the Firefox UI language. */
 export type LanguagePreference = 'auto' | string;
 
 export const isSupportedLocale = (value: unknown): boolean =>
@@ -74,7 +74,7 @@ type RawMessages = Record<string, { message: string }>;
 
 /** Reads a shipped `_locales` bundle so the UI can render a non-browser language. */
 export const loadLocaleMessages = async (locale: string): Promise<Record<string, string>> => {
-  const url = chrome.runtime.getURL(`_locales/${locale}/messages.json`);
+  const url = browser.runtime.getURL(`_locales/${locale}/messages.json`);
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Missing translations for "${locale}"`);

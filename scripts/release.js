@@ -1,9 +1,9 @@
 /**
- * Packages the built extension into a Chrome Web Store-ready zip.
+ * Packages the built Firefox extension into an unsigned XPI.
  * Run via `pnpm release` (which builds first).
  */
-import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import webExt from 'web-ext';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = process.cwd();
@@ -26,10 +26,13 @@ if (version !== manifest.version) {
 
 mkdirSync(releaseDir, { recursive: true });
 
-const zipName = `${name}-${version}.zip`;
-const zipPath = resolve(releaseDir, zipName);
+const xpiName = `${name}-${version}-firefox.xpi`;
 
-rmSync(zipPath, { force: true });
-execSync(`zip -r -q "${zipPath}" .`, { cwd: distDir });
+await webExt.cmd.build({
+  sourceDir: distDir,
+  artifactsDir: releaseDir,
+  filename: xpiName,
+  overwriteDest: true,
+}, { shouldExitProgram: false });
 
-console.log(`✓ Packaged release/${zipName}`);
+console.log(`✓ Packaged release/${xpiName} (unsigned)`);

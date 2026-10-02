@@ -162,10 +162,10 @@ export const normalizeSettings = (
 };
 
 export const readExtensionSettings = async (): Promise<ExtensionSettings> => {
-  if (!globalThis.chrome?.storage?.local) {
+  if (!globalThis.browser?.storage?.local) {
     return createDefaultSettings();
   }
-  const stored = await chrome.storage.local.get([
+  const stored = await browser.storage.local.get([
     STORAGE_KEYS.extensionSettings,
     ...OVERLAY_PROVIDER_IDS.map((provider) => OVERLAY_STORAGE_KEYS[provider].enabled),
   ]);
@@ -179,10 +179,10 @@ export const readExtensionSettings = async (): Promise<ExtensionSettings> => {
 };
 
 export const saveExtensionSettings = async (settings: ExtensionSettings): Promise<void> => {
-  if (!globalThis.chrome?.storage?.local) {
+  if (!globalThis.browser?.storage?.local) {
     return;
   }
-  await chrome.storage.local.set({
+  await browser.storage.local.set({
     [STORAGE_KEYS.extensionSettings]: settings,
     ...Object.fromEntries(
       OVERLAY_PROVIDER_IDS.map((provider) => [

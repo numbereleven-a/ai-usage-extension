@@ -37,7 +37,7 @@ The extension is not distributed through npm.
 
 ### Chrome and Chromium browsers
 
-1. Download the Chrome ZIP and extract it to a folder.
+1. Download the [Chrome 0.1.27 ZIP](https://github.com/numbereleven-a/ai-usage-extension/releases/download/v0.1.27/ai-usage-tracker-0.1.27.zip) and extract it to a folder.
 2. Open `chrome://extensions` and enable **Developer mode**.
 3. Click **Load unpacked** and select the extracted folder containing `manifest.json`.
 
@@ -54,21 +54,20 @@ Load the generated `dist/` folder through **Load unpacked**.
 
 ### Firefox
 
-Firefox 140 or newer is required. The Firefox XPI in this release is unsigned
-and can be loaded temporarily:
+Firefox 140 or newer is required. The [Firefox 0.1.28 ZIP](https://github.com/numbereleven-a/ai-usage-extension/releases/download/v0.1.28/ai-usage-tracker-0.1.28-firefox.zip) contains an unsigned extension for temporary installation:
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Click **Load Temporary Add-on**.
-3. Select the downloaded `*-firefox.xpi`.
+3. Extract the downloaded ZIP and select its `manifest.json`.
 
 Temporary add-ons are removed when Firefox restarts. Permanent installation in
 standard Firefox requires an XPI signed by Mozilla through addons.mozilla.org.
 
 To build from source, use the
-[`firefox` branch](https://github.com/numbereleven-a/ai-usage-extension/tree/firefox):
+[`v0.1.28` tag](https://github.com/numbereleven-a/ai-usage-extension/tree/v0.1.28):
 
 ```bash
-git switch firefox
+git switch --detach v0.1.28
 corepack enable
 pnpm install --frozen-lockfile
 pnpm build
@@ -131,7 +130,7 @@ The worker checks the configured refresh mode whenever it starts and when settin
 change: it restores the recurring alarm in automatic mode and clears it in manual
 mode. Browsers may delay alarms while the device is asleep.
 
-Chrome sources are maintained in `main` and Firefox sources in `firefox`.
+Chrome sources are maintained in `main`; Firefox 0.1.28 sources are preserved in the `v0.1.28` tag.
 Chrome uses `chrome.*` APIs and a service worker; Firefox uses `browser.*` APIs
 and a background event page. Both builds expose the same usage and display settings.
 
@@ -211,7 +210,7 @@ pnpm test
 pnpm build
 ```
 
-On the `firefox` branch, also run `pnpm lint:firefox` after building.
+For the Firefox sources, also run `pnpm lint:firefox` after building.
 
 ## Scripts
 
@@ -220,8 +219,8 @@ On the `firefox` branch, also run `pnpm lint:firefox` after building.
 | `pnpm dev`           | Build and watch for development.              |
 | `pnpm bump`          | Bump `package.json` and `manifest.json` patch versions. |
 | `pnpm build`         | Type-check, then produce a production build.  |
-| `pnpm release`       | Test, build, and package a Chrome ZIP (`main`) or unsigned Firefox XPI (`firefox`). |
-| `pnpm lint:firefox`  | Validate the Firefox build with Mozilla's extension linter (`firefox` branch). |
+| `pnpm release`       | Test, build, and package a Chrome ZIP (`main`) or unsigned Firefox XPI (Firefox sources). |
+| `pnpm lint:firefox`  | Validate the Firefox build with Mozilla's extension linter (Firefox sources). |
 | `pnpm typecheck`     | Run `tsc` with no emit.                       |
 | `pnpm test`          | Run usage-refresh regression tests and store release-gate checks. |
 | `pnpm lint`          | Lint `src/` with ESLint.                      |

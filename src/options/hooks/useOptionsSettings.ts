@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { STORAGE_KEYS } from '../../shared/constants';
 import {
   createDefaultSettings,
+  normalizeSettings,
   readExtensionSettings,
   saveExtensionSettings,
 } from '../../shared/settings';
@@ -26,6 +28,18 @@ export const useOptionsSettings = (): UseOptionsSettingsResult => {
   useEffect(() => {
     let active = true;
 
+    const listener = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ): void => {
+      const change = changes[STORAGE_KEYS.extensionSettings];
+      if (areaName !== 'local' || !change) return;
+      const next = normalizeSettings(change.newValue);
+      settingsRef.current = next;
+      setSettings(next);
+    };
+    chrome.storage.onChanged.addListener(listener);
+
     void readExtensionSettings()
       .then((next) => {
         if (!active) return;
@@ -39,14 +53,16 @@ export const useOptionsSettings = (): UseOptionsSettingsResult => {
 
     return () => {
       active = false;
+      chrome.storage.onChanged.removeListener(listener);
     };
   }, []);
 
-  const enqueueSave = useCallback((next: ExtensionSettings): void => {
+  const enqueueSave = useCallback((updater: SettingsUpdater): void => {
     setSaveState('loading');
     saveQueueRef.current = saveQueueRef.current
       .catch(() => undefined)
       .then(async () => {
+        const next = updater(await readExtensionSettings());
         await saveExtensionSettings(next);
         setSaveState('saved');
       })
@@ -62,7 +78,7 @@ export const useOptionsSettings = (): UseOptionsSettingsResult => {
       const next = updater(current);
       settingsRef.current = next;
       setSettings(next);
-      enqueueSave(next);
+      enqueueSave(updater);
     },
     [enqueueSave],
   );
@@ -71,7 +87,7 @@ export const useOptionsSettings = (): UseOptionsSettingsResult => {
     const next = createDefaultSettings();
     settingsRef.current = next;
     setSettings(next);
-    enqueueSave(next);
+    enqueueSave(createDefaultSettings);
   }, [enqueueSave]);
 
   return { settings, saveState, updateSettings, resetSettings };

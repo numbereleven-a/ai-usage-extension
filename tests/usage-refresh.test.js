@@ -39,6 +39,68 @@ function stubProviders(service) {
 }
 
 describe('provider refresh', () => {
+  it('follows the active Claude organization and falls back to the cache when its cookie is absent', async () => {
+    let organization = 'synthetic-org-a';
+    let cached = {};
+    const requests = [];
+    const chrome = {
+      cookies: { get: async () => (organization ? { value: organization } : null) },
+      storage: {
+        local: {
+          get: async () => cached,
+          set: async (value) => {
+            cached = { ...cached, ...value };
+          },
+        },
+      },
+    };
+    const { UsageService } = loadTypeScript('src/background/services/UsageService.ts', {
+      globals: {
+        chrome,
+        fetch: async (url) => {
+          requests.push(url);
+          return { ok: true, json: async () => ({ five_hour: { utilization: 15 } }) };
+        },
+      },
+    });
+    await UsageService.fetchClaudeUsage();
+    organization = 'synthetic-org-b';
+    await UsageService.fetchClaudeUsage();
+    organization = null;
+    await UsageService.fetchClaudeUsage();
+    assert.deepEqual(
+      requests.map((url) => url.split('/').at(-2)),
+      ['synthetic-org-a', 'synthetic-org-b', 'synthetic-org-b'],
+    );
+    assert.equal(cached.claude_org_id, 'synthetic-org-b');
+  });
+
+  for (const failedEndpoint of ['detail', 'usage']) {
+    it(`retains available MiMo data when the optional ${failedEndpoint} request fails`, async () => {
+      const { UsageService } = serviceHarness(
+        {},
+        {
+          fetch: async (url) => {
+            if (url.endsWith(`/tokenPlan/${failedEndpoint}`)) throw new TypeError('offline');
+            const payload = url.endsWith('/balance')
+              ? { code: 0, data: { balance: '42', currency: 'USD' } }
+              : url.endsWith('/detail')
+                ? { data: { planCode: 'synthetic-plan' } }
+                : { data: { monthUsage: { percent: 40 } } };
+            return { ok: true, json: async () => payload };
+          },
+        },
+      );
+      const usage = await UsageService.fetchMiMoUsage();
+      assert.equal(usage.summary, 'Balance · 42 USD');
+      if (failedEndpoint === 'detail') assert.equal(usage.session.percentage, 40);
+      else {
+        assert.equal(usage.session.available, false);
+        assert.equal(usage.plan, 'synthetic-plan');
+      }
+    });
+  }
+
   it('publishes every ready provider while another is pending, without losing cached data', async () => {
     const cached = sample(12);
     const { UsageService, read } = serviceHarness({ kimi: cached });

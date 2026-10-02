@@ -37,7 +37,7 @@ The extension is not distributed through npm.
 
 ### Chrome and Chromium browsers
 
-1. Download the [Chrome 0.1.27 ZIP](https://github.com/numbereleven-a/ai-usage-extension/releases/download/v0.1.27/ai-usage-tracker-0.1.27.zip) and extract it to a folder.
+1. Download the [Chrome 0.1.29 ZIP](https://github.com/numbereleven-a/ai-usage-extension/releases/download/v0.1.29/ai-usage-tracker-0.1.29.zip) and extract it to a folder.
 2. Open `chrome://extensions` and enable **Developer mode**.
 3. Click **Load unpacked** and select the extracted folder containing `manifest.json`.
 
@@ -54,7 +54,7 @@ Load the generated `dist/` folder through **Load unpacked**.
 
 ### Firefox
 
-Firefox 140 or newer is required. The [Firefox 0.1.28 ZIP](https://github.com/numbereleven-a/ai-usage-extension/releases/download/v0.1.28/ai-usage-tracker-0.1.28-firefox.zip) contains an unsigned extension for temporary installation:
+Firefox 140 or newer is required. The [Firefox 0.1.29 ZIP](https://github.com/numbereleven-a/ai-usage-extension/releases/download/v0.1.29/ai-usage-tracker-0.1.29-firefox.zip) contains an unsigned extension for temporary installation:
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Click **Load Temporary Add-on**.
@@ -64,10 +64,10 @@ Temporary add-ons are removed when Firefox restarts. Permanent installation in
 standard Firefox requires an XPI signed by Mozilla through addons.mozilla.org.
 
 To build from source, use the
-[`v0.1.28` tag](https://github.com/numbereleven-a/ai-usage-extension/tree/v0.1.28):
+[`v0.1.29` tag](https://github.com/numbereleven-a/ai-usage-extension/tree/v0.1.29):
 
 ```bash
-git switch --detach v0.1.28
+git switch --detach v0.1.29
 corepack enable
 pnpm install --frozen-lockfile
 pnpm build
@@ -130,7 +130,7 @@ The worker checks the configured refresh mode whenever it starts and when settin
 change: it restores the recurring alarm in automatic mode and clears it in manual
 mode. Browsers may delay alarms while the device is asleep.
 
-Chrome sources are maintained in `main`; Firefox 0.1.28 sources are preserved in the `v0.1.28` tag.
+Chrome sources are maintained in `main`; Firefox 0.1.29 sources are preserved in the `v0.1.29` tag.
 Chrome uses `chrome.*` APIs and a service worker; Firefox uses `browser.*` APIs
 and a background event page. Both builds expose the same usage and display settings.
 

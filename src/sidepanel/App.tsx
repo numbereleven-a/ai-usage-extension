@@ -132,7 +132,10 @@ export const App = () => {
     <main className={`au-shell ${settings?.popupLayout === 'grid' ? 'au-shell--grid' : ''}`}>
       <header className="au-topbar">
         <div>
-          <h2 className="au-title">{msg('popupTitle')}</h2>
+          <h2 className="au-title">
+            {msg('popupTitle')}
+            <span className="au-version">v{chrome.runtime.getManifest().version}</span>
+          </h2>
         </div>
         <div className="au-topbar__actions">
           <button

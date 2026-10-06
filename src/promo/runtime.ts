@@ -30,6 +30,7 @@ export const installRuntimeStub = (messages: LocaleMessages): void => {
       },
     },
     runtime: {
+      getManifest: () => ({ version: 'preview' }),
       getURL: (path: string) => `/${path}`,
     },
   };

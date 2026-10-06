@@ -1,6 +1,6 @@
 {
 	"name": "ai-usage-tracker",
-	"version": "0.1.29",
+	"version": "0.1.30",
 	"description": "Private Firefox extension for tracking Claude, Codex, Kimi, MiniMax, Cursor, Xiaomi MiMo, GLM, and Qwen Coding Plan usage limits, quotas, and reset times.",
 	"private": true,
 	"license": "MIT",

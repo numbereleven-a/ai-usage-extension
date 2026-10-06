@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from '../../shared/constants';
+import { readExtensionSettings } from '../../shared/settings';
 import {
   ClaudeUsage,
   CodexUsage,
@@ -916,6 +917,7 @@ export class UsageService {
 
   static async refreshAllUsage(): Promise<UsageState> {
     const next = await this.getUsageState();
+    const settings = await readExtensionSettings();
     let saveQueue: Promise<void> = Promise.resolve();
 
     // Publish each provider as it finishes. Serialize writes so a slower storage
@@ -934,6 +936,7 @@ export class UsageService {
       provider: K,
       fetchUsage: () => Promise<UsageState[K] | null>,
     ): Promise<void> => {
+      if (!settings.providers[provider].visible) return;
       const usage = await fetchUsage().catch(() => null);
       if (usage)
         await publish(() => {
@@ -950,6 +953,7 @@ export class UsageService {
       refreshProvider('mimo', () => this.fetchMiMoUsage()),
       refreshProvider('qwen', () => this.fetchQwenUsage()),
       (async () => {
+        if (!settings.providers.glm.visible) return;
         const glm = await this.fetchGlmUsage().catch(() => ({ usage: null, rejected: false }));
         await publish(() => {
           if (glm.usage) next.glm = glm.usage;

@@ -13,7 +13,11 @@ const sample = (percentage) => ({
 });
 const providers = ['Claude', 'Codex', 'MiniMax', 'Kimi', 'Cursor', 'MiMo', 'Qwen'];
 
-function serviceHarness(initial = {}, globals = {}) {
+function serviceHarness(
+  initial = {},
+  globals = {},
+  enabled = ['claude', 'codex', 'minimax', 'kimi', 'cursor', 'mimo', 'glm', 'qwen'],
+) {
   let stored = structuredClone(initial);
   const writes = [];
   const browser = {
@@ -29,6 +33,18 @@ function serviceHarness(initial = {}, globals = {}) {
   };
   const { UsageService } = loadTypeScript('src/background/services/UsageService.ts', {
     globals: { browser, ...globals },
+    mocks: {
+      '../../shared/settings': {
+        readExtensionSettings: async () => ({
+          providers: Object.fromEntries(
+            ['claude', 'codex', 'minimax', 'kimi', 'cursor', 'mimo', 'glm', 'qwen'].map((id) => [
+              id,
+              { visible: enabled.includes(id) },
+            ]),
+          ),
+        }),
+      },
+    },
   });
   return { UsageService, writes, read: () => stored, browser };
 }
@@ -39,6 +55,29 @@ function stubProviders(service) {
 }
 
 describe('provider refresh', () => {
+  for (const enabled of [['codex'], ['glm'], []]) {
+    it(`only refreshes selected providers: ${enabled.join(', ') || 'none'}`, async () => {
+      const cached = { claude: sample(12), issues: { claude: 'auth' } };
+      const { UsageService } = serviceHarness(cached, {}, enabled);
+      const calls = [];
+      for (const name of providers) {
+        UsageService[`fetch${name}Usage`] = async () => {
+          calls.push(name.toLowerCase());
+          return sample(34);
+        };
+      }
+      UsageService.fetchGlmUsage = async () => {
+        calls.push('glm');
+        return { usage: sample(34), rejected: false };
+      };
+      const result = await UsageService.refreshAllUsage();
+      assert.deepEqual(calls, enabled);
+      assert.deepEqual(structuredClone(result.claude), cached.claude);
+      assert.equal(result.issues.claude, 'auth');
+      for (const id of enabled) assert.equal(result[id].session.percentage, 34);
+    });
+  }
+
   it('follows the active Claude organization and falls back to the cache when its cookie is absent', async () => {
     let organization = 'synthetic-org-a';
     let cached = {};
@@ -538,6 +577,7 @@ describe('popup hydration', () => {
       'zai.webp',
     ];
     const { App } = loadTypeScript('src/sidepanel/App.tsx', {
+      globals: { browser: { runtime: { getManifest: () => ({ version: '0.1.30' }) } } },
       mocks: {
         ...Object.fromEntries(assets.map((asset) => [`../assets/brands/${asset}`, 'brand.png'])),
         './styles/global.css': {},
@@ -558,6 +598,7 @@ describe('popup hydration', () => {
       },
     });
     const automatic = renderToStaticMarkup(createElement(App));
+    assert.match(automatic, /class="au-version">v0\.1\.30<\/span>/);
     assert.match(automatic, /title="Usage refresh: Automatic → Only on Refresh"/);
     assert.match(automatic, /aria-pressed="true"[^>]*><span aria-hidden="true">A<\/span>/);
     settings.refresh.mode = 'manual';
